@@ -1,0 +1,140 @@
+<html>
+
+    <head>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js">
+            
+        </script>
+
+        <script>
+            var get_ts = function(channel) {
+                var URL = "https://api.thingspeak.com/channels/" + channel;
+                var dmJSON = URL + "/feeds.json?results=3";
+
+                console.log(dmJSON);
+
+                $.getJSON(dmJSON, function(data) {
+                    console.log(data);
+
+                    $.fn.generateTable = function(data, hidecolumns) {
+                        if ($.isArray(data.feeds) === false) {
+                            console.log('Invalid Data');
+                            return;
+                        }
+
+                        var container = $(this),
+                            ph = $("<p>"),
+                            hrf = $("<a href>"),
+                            table = $("<table border='1'>"),
+                            tableHead = $('<thead>'),
+                            tableBody = $('<tbody>'),
+                            tblHeaderRow = $('<tr>');
+
+                        // Create header line
+                        var tblHead = '<th>' + 'TimeStamp' + '</th>';
+                        if ($.inArray("entry_id", hidecolumns) <= -1) {
+                            tblHead =  tblHead + '<th>' + 'ID' + '</th>';
+                        }
+
+                        // Add names of data fields
+                        for (var i = 1; i < 10; i++) {
+                            var key = "field" + i;
+                            var c = data.channel[key];
+
+                            if (c == undefined)
+                                break;
+                            tblHead = tblHead + '<th>' + c + '</th>'
+                        }
+
+                        // Add hedaer line to header object
+                        tblHeaderRow.append(tblHead);
+
+                        // Parse data lines
+                        $.each(data.feeds, function(index, value) {
+                            var tableRow = $('<tr>').addClass(index % 2 === 0 ? 'even' : 'odd');
+                            $.each(value, function(key, val) {
+                                // Format timestamp to local Date/Time
+                                if(key == "created_at") {
+                                    var d = new Date(val);
+                                    val = d.toLocaleString();
+                                }
+                                // Add value into the row if it isn't include to hiding list
+                                if ($.inArray(key, hidecolumns) <= -1) {
+                                    var tbodydata = $('<td>').text(val);
+                                    tableRow.append(tbodydata);
+                                }
+                            });
+                            $(tableBody).append(tableRow);
+                        });
+                        
+                        $(tblHeaderRow).appendTo(tableHead);
+                        
+                        // Construct the Table
+                        tableHead.appendTo(table);
+                        tableBody.appendTo(table);
+
+                        var tUrl = $("<a href>").text(data.channel.name);
+                        tUrl.attr("href", URL);
+                        tUrl.attr("target", "_blank"); // Open link in ney window (tab)
+                        $(this).append(tUrl);
+                        
+                        $(this).append(table);
+                        $(this).append(ph);
+                        
+                        return 1;
+
+                    };
+
+                    var ret = $("#TheTable"+channel).generateTable(data, ["entry_id"]);
+
+                    return new Promise(function(resolve, reject) {
+                        resolve();
+                    });
+                })
+            }
+
+            $(function() {
+/*
+
+var promisesArray = [];
+promisesArray.push(get_ts(220837));  // 1. D1_DHT11_BATT
+promisesArray.push(get_ts(111251));  // 2. D1_DHT22
+promisesArray.push(get_ts(90629));   // 3. D1_SHT30
+promisesArray.push(get_ts(169389));  // 4. D1_BME
+promisesArray.push(get_ts(680263));  // 5. D1_CCS811_BMP280_SI7021
+promisesArray.push(get_ts(226522));  // 6. D1_AM2302
+promisesArray.push(get_ts(694067));  // D1_test
+var handleAllPromises = Promise.all(promisesArray);
+*/
+
+
+                get_ts(220837);  // 1. D1_DHT11_BATT
+                get_ts(111251);  // 2. D1_DHT22
+                get_ts(90629);   // 3. D1_SHT30
+                get_ts(169389);  // 4. D1_BME
+                get_ts(680263);  // 5. D1_CCS811_BMP280_SI7021
+                get_ts(226522);  // 6. D1_AM2302
+                get_ts(694067);  // D1_test
+
+            });
+        </script>
+    </head>
+
+    <body>
+
+        <p>
+            <pp></pp>
+        </p>
+
+        <div id="TheTable"></div>
+            
+        <div id="TheTable220837"></div>
+        <div id="TheTable111251"></div>
+        <div id="TheTable90629"></div>
+        <div id="TheTable169389"></div>
+        <div id="TheTable680263"></div>
+        <div id="TheTable226522"></div>
+        <div id="TheTable694067"></div>
+
+    </body>
+
+</html>
